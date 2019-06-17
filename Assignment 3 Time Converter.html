@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>My Time Zone</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body style="background-color:#f4f4f4 " >
+   
+    <div class="container">
+            <h2>Time Converter</h2>
+            <form action="" class="form-control">
+                    <div >
+                        <h5>Enter Date</h5>
+                        <input class="form-control" type="datetime-local"  id="x1">
+                    </div>
+                    <br>
+                       
+                    <div style="display:inline;">
+                        <select id="select" class="form-control">
+                            <option value="EST">EST</option>
+                            <option value="CET">CET</option>
+                            <option value="PST">PST</option>
+                            <option value="CDT">CDT</option>
+                            <option value="CEST">CEST</option>
+                            <option value="BST">BST</option>
+                            <option value="GST">GST</option>
+                            <option value="JST">JST</option>
+                        </select>
+                    </div>
+                    <br>
+                    <div  >
+                        <input type="button" class="btn btn-info form-control" value="Convert" onclick="chg()">
+                    </div>
+                    <br>
+                    <div class="form-control">
+                            Converted <label id="main"></label><br>
+                            Device LAN IP Address : <label id="ip"></label><br>
+                            Device Public IP Address : <label id="ii"></label><br>
+                            Current Time Zone : <label id="ctz"></label> <br>
+                            Browser Info : <label id="bi"></label><br>
+                            Screen Resolution : <label id="sr"></label> <br>
+                            Device Pixel Ratio : <label id="dpr"></label><br>
+                            Device OS : <label id="dc"></label><br>
+                            </div>
+                </form>
+    </div>
+    <script>
+   
+    function chg(){
+        var d,utc,nd;
+    var c=document.getElementById("select").value;
+    var val=0;
+    document.getElementById("ii").style.display="inline";
+    switch(c){
+        case "EST": val= -5; break;
+        case "CET": val= +1; break;
+        case "PST": val= -8; break;
+        case "CDT": val= -5; break;
+        case "CEST": val= +2; break;
+        case "BST": val= +1; break;
+        case "GST": val= +4; break;
+        case "JST": val= +9; break;
+    }
+    
+    console.log(c+"  "+val);
+    console.log(document.getElementById("x1").value)
+   
+    d = new Date(x1.value);
+    console.log(d);
+   utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+   nd = new Date(utc + (3600000*val));
+   console.log(nd);
+   document.getElementById("main").innerText= "Into "+c+":  "+nd;
+   dt = new Date();
+   dt= seconds_with_leading_zeros(dt);
+   document.getElementById("ctz").innerText= dt;
+
+   var objAgent = navigator.userAgent;
+var objbrowserName = navigator.appName;
+var objOffsetName,objOffsetVersion;
+if ((objOffsetVersion=objAgent.indexOf("Chrome"))!=-1) 
+{ 
+    objbrowserName = "Chrome"; 
+objfullVersion = objAgent.substring(objOffsetVersion+7);
+} 
+// In Microsoft internet explorer 
+else if ((objOffsetVersion=objAgent.indexOf("MSIE"))!=-1) 
+{ 
+    objbrowserName = "Microsoft Internet Explorer"; 
+objfullVersion = objAgent.substring(objOffsetVersion+5); 
+} 
+// In Firefox 
+else if ((objOffsetVersion=objAgent.indexOf("Firefox"))!=-1) 
+{ 
+    objbrowserName = "Firefox"; 
+}
+ 
+document.getElementById("bi").innerText=  objbrowserName;
+document.getElementById("sr").innerText = window.screen.width + "x" + window.screen.height;
+document.getElementById("dpr").innerText = window.devicePixelRatio;   
+
+var Agent = navigator.userAgent;
+var vendor = navigator.vendor;
+var device = Agent || vendor || window.opera;
+
+if (/windows /i.test(device)) {
+document.getElementById("dc").innerText = "Windows ";
+}
+if (/android/i.test(device)) {
+document.getElementById("dc").innerText = "Android";
+}
+if (/iPad|iPhone|iPod/.test(device) && !window.MSStream) {
+document.getElementById("dc").innerText = "iOS";
+}
+getUserIP(function(ip1){
+    document.getElementById("ip").innerHTML =  ip1;
+});
+
+function getUserIP(onNewIP) { //  onNewIp - your listener function for new IPs
+    //compatibility for firefox and chrome
+    var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+    var pc = new myPeerConnection({
+        iceServers: []
+    }),
+    noop = function() {},
+    localIPs = {},
+    ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g,
+    key;
+
+    function iterateIP(ip) {
+        if (!localIPs[ip]) onNewIP(ip);
+        localIPs[ip] = true;
+    }
+
+     //create a bogus data channel
+    pc.createDataChannel("");
+
+    // create offer and set local description
+    pc.createOffer(function(sdp) {
+        sdp.sdp.split('\n').forEach(function(line) {
+            if (line.indexOf('candidate') < 0) return;
+            line.match(ipRegex).forEach(iterateIP);
+        });
+        
+        pc.setLocalDescription(sdp, noop, noop);
+    }, noop); 
+
+    
+    pc.onicecandidate = function(ice) {
+        if (!ice || !ice.candidate || !ice.candidate.candidate || !ice.candidate.candidate.match(ipRegex)) return;
+        ice.candidate.candidate.match(ipRegex).forEach(iterateIP);
+    };
+}
+    } 
+    function seconds_with_leading_zeros(dt) 
+{ 
+  return /\((.*)\)/.exec(new Date().toString())[1];
+}
+
+function getIP(json) {
+    document.getElementById("ii").innerHTML =  json.ip;
+    document.getElementById("ii").style.display="none";
+   
+  }
+ 
+
+
+</script>
+    <script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script>
+</body>
+</html>
